@@ -7,3 +7,5 @@
 5. Crea el superusuario y ejecuta los comandos de seed si el contenedor no lo ha hecho.
 
 PostgreSQL queda ligado a `127.0.0.1:10410`; no debe exponerse públicamente. Antes de habilitar HSTS confirma que todo el dominio usa HTTPS.
+
+Nginx Proxy Manager debe reenviar `X-Forwarded-Proto: https`; Django lo usa mediante `SECURE_PROXY_SSL_HEADER` para aplicar HTTPS sin romper el healthcheck interno.
