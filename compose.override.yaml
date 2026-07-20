@@ -1,0 +1,7 @@
+services:
+  web:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      DJANGO_DEBUG: "true"
+    volumes:
+      - .:/app
