@@ -1,1 +1,61 @@
-{% extends 'base.html' %}{% block title %}Mi cuenta{% endblock %}{% block content %}<h1>Mi cuenta</h1><section><h2>{{ user.get_full_name|default:user.username }}</h2><p>{{ user.email }}</p><dl><dt>Plan</dt><dd>{{ summary.plan }}</dd><dt>Límite diario</dt><dd>{{ summary.daily_limit }}</dd><dt>Usadas hoy</dt><dd>{{ summary.used_today }}</dd><dt>Restantes</dt><dd>{{ summary.remaining_today }}</dd></dl></section><section><h2>Aplicaciones</h2><ul>{% for application in applications %}<li><a href="{{ application.base_url }}">{{ application.name }}</a>{% if application.consumes_quota %} consume cuota{% endif %}</li>{% endfor %}</ul></section><section><h2>Actividad reciente</h2><table><thead><tr><th>Aplicación</th><th>Acción</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>{% for event in events %}<tr><td>{{ event.application.name }}</td><td>{{ event.action }}</td><td>{{ event.get_status_display }}</td><td>{{ event.created_at }}</td></tr>{% empty %}<tr><td colspan="4">Todavía no hay interacciones.</td></tr>{% endfor %}</tbody></table></section><section><h2>Eliminar cuenta</h2><form method="post" action="{% url 'delete_account' %}">{% csrf_token %}<button type="submit">Solicitar borrado de cuenta</button></form></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Mi cuenta · Carlos Revert{% endblock %}
+{% block content %}
+<div class="account-page">
+  <header class="account-heading">
+    <div><p class="eyebrow">Área personal</p><h1>Mi cuenta</h1><p class="heading-copy">Consulta tu plan, tus aplicaciones y la actividad reciente.</p></div>
+    <a class="settings-link" href="{% url 'password_change' %}">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.94 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15 1.7 1.7 0 0 0 3 14H3v-4h.08A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7l2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3V3h4v.08A1.7 1.7 0 0 0 15.06 4.6a1.7 1.7 0 0 0 1.88-.34L17 4.2 19.8 7l-.06.06A1.7 1.7 0 0 0 19.4 9 1.7 1.7 0 0 0 21 10h.08v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+      Seguridad
+    </a>
+  </header>
+
+  <section class="account-overview" aria-labelledby="profile-title">
+    <div class="profile-panel">
+      <div class="avatar" aria-hidden="true">{{ user.get_full_name|default:user.username|first|upper }}</div>
+      <div class="profile-copy"><p class="panel-label">Tu perfil</p><h2 id="profile-title">{{ user.get_full_name|default:user.username }}</h2><p>{{ user.email }}</p></div>
+      <span class="plan-badge">Plan {{ summary.plan }}</span>
+    </div>
+    <div class="quota-panel">
+      <div class="quota-header">
+        <div><p class="panel-label">Uso diario</p><p class="quota-number"><strong>{{ summary.remaining_today }}</strong> <span>disponibles</span></p></div>
+        <svg class="quota-icon" aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5.64 5.64l12.72 12.72M3 12h18M5.64 18.36 18.36 5.64"/></svg>
+      </div>
+      <progress class="quota-progress" value="{{ summary.used_today }}" max="{% if summary.daily_limit %}{{ summary.daily_limit }}{% else %}1{% endif %}">{{ summary.used_today }} de {{ summary.daily_limit }}</progress>
+      <div class="quota-meta"><span><strong>{{ summary.used_today }}</strong> usadas hoy</span><span>Límite de <strong>{{ summary.daily_limit }}</strong></span></div>
+    </div>
+  </section>
+
+  <section class="content-section" aria-labelledby="apps-title">
+    <div class="section-heading"><div><p class="eyebrow">Acceso rápido</p><h2 id="apps-title">Aplicaciones</h2></div><span class="section-count">{{ applications|length }} disponibles</span></div>
+    <div class="app-grid">
+      {% for application in applications %}
+        <a class="app-card" href="{{ application.base_url }}">
+          <span class="app-monogram" aria-hidden="true">{{ application.name|first|upper }}</span>
+          <span class="app-copy"><strong>{{ application.name }}</strong><span>{% if application.consumes_quota %}Usa tu cuota diaria{% else %}Acceso incluido{% endif %}</span></span>
+          <svg class="app-arrow" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      {% empty %}<p class="empty-card">No hay aplicaciones disponibles en este momento.</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="content-section" aria-labelledby="activity-title">
+    <div class="section-heading"><div><p class="eyebrow">Últimos movimientos</p><h2 id="activity-title">Actividad reciente</h2></div></div>
+    <div class="activity-card"><div class="table-scroll"><table>
+      <thead><tr><th>Aplicación</th><th>Acción</th><th>Estado</th><th>Fecha</th></tr></thead>
+      <tbody>
+        {% for event in events %}
+          <tr><td><strong>{{ event.application.name }}</strong></td><td>{{ event.action }}</td><td><span class="status status-{{ event.status }}">{{ event.get_status_display }}</span></td><td><time datetime="{{ event.created_at|date:'c' }}">{{ event.created_at|date:"d M Y, H:i" }}</time></td></tr>
+        {% empty %}
+          <tr class="empty-row"><td colspan="4"><span class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10M9 7V5a3 3 0 0 1 6 0v2M3 19h18"/></svg></span><strong>Aún no hay actividad</strong><span>Tus próximas interacciones aparecerán aquí.</span></td></tr>
+        {% endfor %}
+      </tbody>
+    </table></div></div>
+  </section>
+
+  <section class="danger-zone" aria-labelledby="delete-title">
+    <div><h2 id="delete-title">Eliminar cuenta</h2><p>Tu acceso se desactivará y cerrarás sesión inmediatamente.</p></div>
+    <form method="post" action="{% url 'delete_account' %}">{% csrf_token %}<button class="danger-button" type="submit">Solicitar borrado</button></form>
+  </section>
+</div>
+{% endblock %}

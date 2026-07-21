@@ -1,2 +1,35 @@
 {% load static %}
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Carlos Revert Cuenta{% endblock %}</title><link rel="stylesheet" href="{% static 'css/app.css' %}"></head><body><header class="site-header"><a href="{% url 'account' %}">Carlos Revert Cuenta</a><nav>{% if user.is_authenticated %}<a href="{% url 'password_change' %}">Contraseña</a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Salir</button></form>{% else %}<a href="{% url 'login' %}">Entrar</a><a href="{% url 'register' %}">Crear cuenta</a>{% endif %}</nav></header><main class="container">{% if messages %}{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}{% endif %}{% block content %}{% endblock %}</main><footer><a href="{% url 'terms' %}">Términos</a><a href="{% url 'privacy' %}">Privacidad</a></footer></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ed">
+  <title>{% block title %}Carlos Revert Cuenta{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{% url 'account' %}" aria-label="Carlos Revert Cuenta, inicio">
+      <span class="brand-mark" aria-hidden="true">CR</span><span>Carlos Revert <strong>Cuenta</strong></span>
+    </a>
+    <nav aria-label="Navegación principal">
+      {% if user.is_authenticated %}
+        <a class="nav-link" href="{% url 'password_change' %}">Contraseña</a>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit">Cerrar sesión</button></form>
+      {% else %}
+        <a class="nav-link" href="{% url 'login' %}">Entrar</a>
+        <a class="nav-link nav-link-primary" href="{% url 'register' %}">Crear cuenta</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="container">
+    {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <span>© {% now "Y" %} Carlos Revert</span>
+    <nav aria-label="Información legal"><a href="{% url 'terms' %}">Términos</a><a href="{% url 'privacy' %}">Privacidad</a></nav>
+  </footer>
+</body>
+</html>
