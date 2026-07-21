@@ -110,10 +110,10 @@ def reserve_interaction(
                     request_id=request_id, user=user, application=application, action=action
                 )
         except IntegrityError:
-            reservation = (
-                InteractionReservation.objects.select_for_update()
-                .select_related("event")
-                .get(request_id=request_id)
+            # Lock only the reservation row. PostgreSQL cannot apply FOR UPDATE
+            # to the nullable side introduced by select_related("event").
+            reservation = InteractionReservation.objects.select_for_update().get(
+                request_id=request_id
             )
             if (
                 reservation.user_id != user.id
