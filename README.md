@@ -36,6 +36,8 @@ docker compose -f compose.yaml up --build
 
 El proxy inverso debe dirigir `cuenta.carlosrevert.es` a `:10401`. Consulta [despliegue](docs/deployment.md).
 
+La documentación transversal incluye el [inventario de aplicaciones](docs/integration-inventory.md), las [evidencias E2E](docs/pfm-evidence.md) y el [procedimiento de rollback](docs/rollback.md).
+
 ## API principal
 
 - `GET /api/v1/auth/me/`
@@ -59,7 +61,7 @@ python manage.py check
 DJANGO_SETTINGS_MODULE=config.settings.production python manage.py check --deploy
 ```
 
-Los planes se editan desde Django Admin. Los comandos `seed_plans` y `seed_applications` son idempotentes. Se puede importar una exportación permitida sin contraseñas mediante `python manage.py import_keycloak_users users.csv`; los usuarios quedan inactivos y deben activar una contraseña nueva.
+Los planes se editan desde Django Admin. Los comandos `seed_plans` y `seed_applications` son idempotentes. Las cuentas se crean desde cero en Django; no existe migración ni importación desde Keycloak.
 
 ## Seguridad y límites
 
@@ -67,4 +69,4 @@ FREE recibe 5 interacciones/día; PREMIUM, 20. El contador es común a todas las
 
 ## Limitaciones y evolución
 
-No hay pagos ni migración de contraseñas Keycloak. El cambio de PREMIUM es manual en Admin. El correo de activación tras importación y una infraestructura de rate limit distribuida (Redis) son mejoras previstas antes de gran escala.
+No hay pagos ni migración de identidades Keycloak. El cambio de PREMIUM es manual en Admin. El correo de verificación y una infraestructura de rate limit distribuida (Redis) son mejoras previstas antes de gran escala.
