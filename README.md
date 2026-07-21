@@ -36,7 +36,7 @@ docker compose -f compose.yaml up --build
 
 El proxy inverso debe dirigir `cuenta.carlosrevert.es` a `:10401`. Consulta [despliegue](docs/deployment.md).
 
-La documentación transversal incluye el [inventario de aplicaciones](docs/integration-inventory.md), las [evidencias E2E](docs/pfm-evidence.md) y el [procedimiento de rollback](docs/rollback.md).
+La documentación transversal incluye el [tour completo de producción](docs/production-tour.md), el [inventario de aplicaciones](docs/integration-inventory.md), las [evidencias E2E](docs/pfm-evidence.md) y el [procedimiento de rollback](docs/rollback.md).
 
 ## API principal
 
