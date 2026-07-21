@@ -206,7 +206,7 @@ def validate_interaction(
     try:
         event = (
             UsageEvent.objects.select_for_update()
-            .select_related("user", "user__user_plan__plan", "application")
+            .select_related("user", "application")
             .get(request_id=request_id)
         )
     except UsageEvent.DoesNotExist as exc:
