@@ -100,3 +100,9 @@ class CompleteSerializer(serializers.Serializer):
 class FailSerializer(serializers.Serializer):
     error_code = serializers.RegexField(regex=r"^[A-Za-z0-9_.:-]{1,80}$")
     metadata = serializers.JSONField(required=False)
+
+
+class ValidateReservationSerializer(serializers.Serializer):
+    request_id = serializers.UUIDField()
+    application = serializers.SlugField(max_length=50)
+    action = serializers.RegexField(regex=r"^[A-Za-z0-9_.:-]{1,80}$")

@@ -24,6 +24,7 @@ class UsageEventAdmin(admin.ModelAdmin):
         "metadata",
         "error_code",
         "processing_time_ms",
+        "validated_at",
         "created_at",
         "completed_at",
     )

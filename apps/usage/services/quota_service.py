@@ -127,6 +127,10 @@ def reserve_interaction(
                 raise QuotaError(
                     "request_in_progress", "La interacción sigue en curso.", 409
                 ) from None
+            if reservation.event.status != UsageEvent.Status.AUTHORIZED:
+                raise QuotaError(
+                    "request_already_used", "La interacción ya ha sido procesada.", 409
+                ) from None
             return reservation.event, check_quota(user)
 
         if not user.is_active or user.is_blocked:
@@ -193,11 +197,42 @@ def reserve_interaction(
 
 
 @transaction.atomic
+def validate_interaction(
+    request_id: Any,
+    application: "ClientApplication",
+    action: str,
+) -> UsageEvent:
+    """Consume a reservation exactly once before an application starts AI work."""
+    try:
+        event = (
+            UsageEvent.objects.select_for_update()
+            .select_related("user", "user__user_plan__plan", "application")
+            .get(request_id=request_id)
+        )
+    except UsageEvent.DoesNotExist as exc:
+        raise QuotaError("invalid_reservation", "La reserva no existe.", 404) from exc
+
+    if event.application_id != application.id or event.action != action:
+        raise QuotaError(
+            "reservation_mismatch", "La reserva no corresponde a esta aplicación o acción.", 403
+        )
+    if event.status != UsageEvent.Status.AUTHORIZED:
+        raise QuotaError("request_already_used", "La reserva ya ha sido utilizada.", 409)
+    if not event.user.is_active or event.user.is_blocked or not application.is_active:
+        raise QuotaError("account_unavailable", "La cuenta o aplicación no está disponible.", 403)
+
+    event.status = UsageEvent.Status.PROCESSING
+    event.validated_at = timezone.now()
+    event.save(update_fields=("status", "validated_at"))
+    return event
+
+
+@transaction.atomic
 def complete_interaction(
     request_id: Any, metadata: dict[str, Any] | None = None, processing_time_ms: int | None = None
 ) -> UsageEvent:
     event = UsageEvent.objects.select_for_update().get(request_id=request_id)
-    if event.status == UsageEvent.Status.AUTHORIZED:
+    if event.status == UsageEvent.Status.PROCESSING:
         event.status = UsageEvent.Status.COMPLETED
         event.metadata = _clean_metadata(metadata)
         event.processing_time_ms = processing_time_ms
@@ -215,7 +250,7 @@ def fail_interaction(
         .select_related("application", "user")
         .get(request_id=request_id)
     )
-    if event.status != UsageEvent.Status.AUTHORIZED:
+    if event.status != UsageEvent.Status.PROCESSING:
         return event
     event.status = UsageEvent.Status.FAILED
     event.error_code = error_code[:80]

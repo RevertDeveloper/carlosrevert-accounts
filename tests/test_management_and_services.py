@@ -15,6 +15,7 @@ from apps.usage.services.quota_service import (
     complete_interaction,
     fail_interaction,
     reserve_interaction,
+    validate_interaction,
 )
 from apps.users.models import User
 
@@ -60,12 +61,14 @@ class QuotaServiceTests(TestCase):
 
     def test_completion_sanitizes_content_and_refundable_failure_decrements(self):
         event, _ = reserve_interaction(self.user, self.application, "query", uuid.uuid4())
+        validate_interaction(event.request_id, self.application, "query")
         complete_interaction(event.request_id, {"prompt": "secret", "source": "juridia"}, 5)
         event.refresh_from_db()
         self.assertEqual(event.status, UsageEvent.Status.COMPLETED)
         self.assertEqual(event.metadata, {"source": "juridia"})
 
         retry, _ = reserve_interaction(self.user, self.application, "query", uuid.uuid4())
+        validate_interaction(retry.request_id, self.application, "query")
         fail_interaction(
             retry.request_id, "before_processing", {"response": "secret", "retry": True}
         )

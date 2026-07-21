@@ -22,6 +22,7 @@ class DailyUsage(models.Model):  # noqa: DJ008
 class UsageEvent(models.Model):  # noqa: DJ008
     class Status(models.TextChoices):
         AUTHORIZED = "authorized", "Authorized"
+        PROCESSING = "processing", "Processing"
         COMPLETED = "completed", "Completed"
         FAILED = "failed", "Failed"
         REJECTED_QUOTA = "rejected_quota", "Rejected by quota"
@@ -42,6 +43,7 @@ class UsageEvent(models.Model):  # noqa: DJ008
     error_code = models.CharField(max_length=80, blank=True)
     processing_time_ms = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    validated_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

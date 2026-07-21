@@ -16,6 +16,7 @@ from apps.usage.services.quota_service import (
     fail_interaction,
     get_usage_summary,
     reserve_interaction,
+    validate_interaction,
 )
 
 from .permissions import IsInternalService
@@ -28,6 +29,7 @@ from .serializers import (
     ReserveSerializer,
     UsageEventSerializer,
     UserSerializer,
+    ValidateReservationSerializer,
 )
 
 
@@ -226,6 +228,40 @@ class FailUsageView(APIView):
         return Response(UsageEventSerializer(event).data)
 
 
+@extend_schema(request=ValidateReservationSerializer, responses={200: OpenApiTypes.OBJECT})
+class ValidateUsageView(APIView):
+    permission_classes = (IsInternalService,)
+
+    def post(self, request):  # type: ignore[no-untyped-def]
+        serializer = ValidateReservationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        if data["application"] != request.client_application.slug:
+            return Response(
+                {"valid": False, "code": "application_mismatch"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            event = validate_interaction(
+                data["request_id"], request.client_application, data["action"]
+            )
+        except QuotaError as exc:
+            return Response(
+                {"valid": False, "code": exc.code, "message": exc.message},
+                status=exc.http_status,
+            )
+        return Response(
+            {
+                "valid": True,
+                "request_id": str(event.request_id),
+                "user_id": event.user_id,
+                "plan": event.user.user_plan.plan.code,
+                "application": event.application.slug,
+                "action": event.action,
+            }
+        )
+
+
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class MetricsView(APIView):
     permission_classes = (IsAdminUser,)
@@ -262,6 +298,7 @@ class MetricsView(APIView):
                     created_at__date=today,
                     status__in=[
                         UsageEvent.Status.AUTHORIZED,
+                        UsageEvent.Status.PROCESSING,
                         UsageEvent.Status.COMPLETED,
                         UsageEvent.Status.FAILED,
                     ],

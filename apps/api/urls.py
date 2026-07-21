@@ -12,6 +12,11 @@ urlpatterns = [
     path("usage/reserve/", views.ReserveUsageView.as_view(), name="api-usage-reserve"),
     path("usage/history/", views.UsageHistoryView.as_view(), name="api-usage-history"),
     path(
+        "internal/usage/validate/",
+        views.ValidateUsageView.as_view(),
+        name="api-usage-validate",
+    ),
+    path(
         "usage/<uuid:request_id>/complete/",
         views.CompleteUsageView.as_view(),
         name="api-usage-complete",

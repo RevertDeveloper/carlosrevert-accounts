@@ -18,4 +18,6 @@ sequenceDiagram
   end
 ```
 
+El backend consumidor debe validar la reserva antes de iniciar IA. La validación cambia el evento de `authorized` a `processing` dentro de una transacción; cualquier reutilización posterior se rechaza con HTTP 409.
+
 Un fallo `before_processing` reembolsa una reserva porque se produjo antes de usar recursos del modelo. Otros fallos permanecen consumidos. La lista puede cambiarse con `QUOTA_REFUNDABLE_ERROR_CODES`.
