@@ -18,3 +18,28 @@ class WebViewsTests(TestCase):
         )
         self.client.force_login(user)
         self.assertEqual(self.client.get(reverse("account")).status_code, 200)
+
+    def test_login_only_redirects_to_carlosrevert_hosts(self):
+        User.objects.create_user(
+            username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"
+        )
+        external = self.client.post(
+            f"{reverse('login')}?next=https://evil.example/phishing",
+            {
+                "identifier": "ana",
+                "password": "CorrectHorseBatteryStaple123!",
+                "next": "https://evil.example/phishing",
+            },
+        )
+        self.assertRedirects(external, reverse("account"))
+        self.client.logout()
+        trusted = self.client.post(
+            reverse("login"),
+            {
+                "identifier": "ana",
+                "password": "CorrectHorseBatteryStaple123!",
+                "next": "https://juridia.carlosrevert.es/consulta",
+            },
+        )
+        self.assertEqual(trusted.status_code, 302)
+        self.assertEqual(trusted.url, "https://juridia.carlosrevert.es/consulta")
