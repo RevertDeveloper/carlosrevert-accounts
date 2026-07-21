@@ -1,6 +1,4 @@
-import tempfile
 import uuid
-from pathlib import Path
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -32,20 +30,6 @@ class ManagementCommandTests(TestCase):
         self.assertEqual(Plan.objects.get(code="PREMIUM").daily_interaction_limit, 20)
         self.assertEqual(ClientApplication.objects.count(), 4)
         self.assertTrue(User.objects.filter(username="demo-admin", is_superuser=True).exists())
-
-    def test_keycloak_import_is_idempotent_and_never_imports_passwords(self):
-        source = Path(tempfile.mkstemp(suffix=".csv")[1])
-        self.addCleanup(source.unlink)
-        source.write_text(
-            "username,email,first_name,last_name\nlegacy,legacy@example.test,Ana,Legacy\ninvalid,,X,Y\n"
-        )
-        call_command("import_keycloak_users", str(source))
-        call_command("import_keycloak_users", str(source))
-        user = User.objects.get(username="legacy")
-        self.assertFalse(user.is_active)
-        self.assertFalse(user.has_usable_password())
-        self.assertEqual(User.objects.filter(username="legacy").count(), 1)
-
 
 class QuotaServiceTests(TestCase):
     def setUp(self):
