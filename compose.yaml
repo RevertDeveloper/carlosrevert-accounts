@@ -12,8 +12,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: >
-      sh -c "python manage.py migrate --noinput && python manage.py seed_plans &&
-      python manage.py seed_applications && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile - --error-logfile -"
+      sh -c "python manage.py migrate --noinput && python manage.py createcachetable &&
+      python manage.py seed_plans && python manage.py seed_applications && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile - --error-logfile -"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/health/', headers={'X-Forwarded-Proto': 'https'}), timeout=3)"]
       interval: 30s

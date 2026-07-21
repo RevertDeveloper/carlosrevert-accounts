@@ -8,6 +8,8 @@ class ClientApplicationAdmin(admin.ModelAdmin):
     list_display = ("name", "slug", "base_url", "is_active", "consumes_quota")
     list_filter = ("is_active", "consumes_quota")
     search_fields = ("name", "slug")
+    exclude = ("service_key_hash",)
+    readonly_fields = ("created_at",)
     actions = ("rotate_keys",)
 
     @admin.action(description="Rotar credencial de servicio")

@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from apps.admin import ReadOnlyAdminMixin
+
 from .models import Plan, PlanChangeLog, UserPlan
 
 
@@ -11,14 +13,15 @@ class PlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(UserPlan)
-class UserPlanAdmin(admin.ModelAdmin):
+class UserPlanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = ("user", "plan", "assigned_at", "assigned_by")
     list_filter = ("plan",)
     search_fields = ("user__email", "user__username")
+    readonly_fields = ("user", "plan", "assigned_at", "updated_at", "assigned_by")
 
 
 @admin.register(PlanChangeLog)
-class PlanChangeLogAdmin(admin.ModelAdmin):
+class PlanChangeLogAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = ("user", "previous_plan", "new_plan", "changed_by", "created_at")
     search_fields = ("user__email", "user__username")
     readonly_fields = ("user", "previous_plan", "new_plan", "changed_by", "reason", "created_at")

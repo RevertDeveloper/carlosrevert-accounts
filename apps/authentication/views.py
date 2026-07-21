@@ -13,6 +13,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
+from apps.api.rate_limit import is_rate_limited
+
 from .forms import (
     AccountPasswordChangeForm,
     AccountPasswordResetForm,
@@ -39,6 +41,14 @@ def register(request):  # type: ignore[no-untyped-def]
     if request.user.is_authenticated:
         return redirect("account")
     form = RegistrationForm(request.POST or None)
+    if request.method == "POST" and is_rate_limited(request, "web-register", 5, 3600):
+        form.add_error(None, "Demasiados intentos de registro. Inténtalo más tarde.")
+        return render(
+            request,
+            "authentication/register.html",
+            {"form": form, "next": _safe_next_url(request)},
+            status=429,
+        )
     if request.method == "POST" and form.is_valid():
         user = form.save()
         login(request, user, backend="apps.authentication.backends.EmailOrUsernameModelBackend")

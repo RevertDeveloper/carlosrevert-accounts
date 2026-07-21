@@ -3,6 +3,7 @@ from .base import *  # noqa: F403
 DEBUG = False
 SESSION_COOKIE_DOMAIN = env("SESSION_COOKIE_DOMAIN", default=".carlosrevert.es")  # noqa: F405
 CSRF_COOKIE_DOMAIN = env("CSRF_COOKIE_DOMAIN", default=".carlosrevert.es")  # noqa: F405
+TRUSTED_PROXY_IPS = env.list("TRUSTED_PROXY_IPS", default=["127.0.0.1"])  # noqa: F405
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)  # noqa: F405
@@ -13,3 +14,17 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "accounts_cache",
+    }
+}
+
+# Never print password-reset links to production logs. SMTP credentials remain
+# environment-only and must be configured before enabling password recovery.
+EMAIL_BACKEND = env(  # noqa: F405
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)

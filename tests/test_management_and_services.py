@@ -31,6 +31,7 @@ class ManagementCommandTests(TestCase):
         self.assertEqual(ClientApplication.objects.count(), 4)
         self.assertTrue(User.objects.filter(username="demo-admin", is_superuser=True).exists())
 
+
 class QuotaServiceTests(TestCase):
     def setUp(self):
         call_command("seed_plans")
