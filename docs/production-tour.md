@@ -4,7 +4,7 @@ Esta guía permite validar y operar el servicio central sin acceder directamente
 
 ## 1. Regla de despliegue
 
-Producción siempre debe indicar el fichero Compose para no cargar `compose.override.yaml`, que está reservado al desarrollo:
+Producción usa `compose.yaml`; el fichero `compose.dev.yaml` está reservado al desarrollo y no se carga automáticamente:
 
 ```bash
 docker compose -f compose.yaml up -d --build

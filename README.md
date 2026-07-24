@@ -26,6 +26,8 @@ python manage.py runserver
 
 Para demostración local: `python manage.py create_demo_users`. No se ejecuta en producción.
 
+Para desarrollo Docker con código montado, usa explícitamente `docker compose -f compose.yaml -f compose.dev.yaml up`.
+
 ## Docker
 
 ```bash
