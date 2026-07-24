@@ -16,7 +16,12 @@ class RegistrationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("username", "email", "first_name", "last_name")
+        fields = ("username", "email")
+
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        super().__init__(*args, **kwargs)
+        # La ayuda técnica del modelo no aporta valor en el formulario público.
+        self.fields["username"].help_text = ""
 
     def clean_email(self) -> str:
         return self.cleaned_data["email"].lower()
@@ -28,6 +33,21 @@ class RegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class AccountUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("username", "email", "first_name", "last_name")
+        labels = {
+            "username": "Usuario",
+            "email": "Correo electrónico",
+            "first_name": "Nombre",
+            "last_name": "Apellidos",
+        }
+
+    def clean_email(self) -> str:
+        return self.cleaned_data["email"].lower()
 
 
 class LoginForm(forms.Form):

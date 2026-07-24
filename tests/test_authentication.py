@@ -47,6 +47,18 @@ class AuthenticationApiTests(TestCase):
         self.assertEqual(duplicate.status_code, 400)
         self.assertEqual(weak.status_code, 400)
 
+    def test_six_character_password_and_username_like_password_are_allowed(self):
+        response = self.client.post(
+            reverse("api-register"),
+            {
+                "username": "zxqvbn",
+                "email": "short@example.com",
+                "password": "zxqvbn",
+                "accepted_terms": True,
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+
     def test_login_logout_and_blocked_user(self):
         user = User.objects.create_user(
             username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"

@@ -28,7 +28,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("username", "email", "password", "first_name", "last_name", "accepted_terms")
+        fields = ("username", "email", "password", "accepted_terms")
         extra_kwargs = {"username": {"required": True}, "email": {"required": True}}
 
     def validate_email(self, value: str) -> str:

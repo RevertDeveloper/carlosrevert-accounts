@@ -1,1 +1,32 @@
-{% extends 'base.html' %}{% block title %}Crear cuenta{% endblock %}{% block content %}<h1>Crear cuenta</h1><form method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">{{ form.as_p }}<button type="submit">Crear cuenta FREE</button></form><p>¿Ya tienes cuenta? <a href="{% url 'login' %}?next={{ next|urlencode }}">Inicia sesión</a>.</p>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="auth-intro"><h1>Crear cuenta</h1></div>
+  <form class="auth-form register-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    {% if form.non_field_errors %}<div class="errorlist" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+    {% for field in form %}
+      {% if field.name == "accepted_terms" %}
+        <div class="register-terms{% if field.errors %} has-error{% endif %}">
+          {{ field }}
+          <label for="{{ field.id_for_label }}"><span>{{ field.label }}</span><span class="required-mark" aria-hidden="true">*</span></label>
+        </div>
+      {% else %}
+        <div class="register-field{% if field.errors %} has-error{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}<span class="required-mark" aria-hidden="true">*</span></label>
+          {{ field }}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text|safe }}</div>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <button type="submit">Crear cuenta FREE</button>
+  </form>
+  <p>¿Ya tienes cuenta? <a href="{% url 'login' %}?next={{ next|urlencode }}">Inicia sesión</a>.</p>
+</section>
+{% endblock %}

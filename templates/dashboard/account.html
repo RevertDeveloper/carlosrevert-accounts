@@ -26,17 +26,18 @@
     </div>
   </section>
 
+  <section class="content-section" aria-labelledby="account-details-title">
+    <div class="section-heading"><div><p class="eyebrow">Datos personales</p><h2 id="account-details-title">Editar cuenta</h2></div></div>
+    <form method="post" class="account-form">
+      {% csrf_token %}
+      {{ account_form.as_p }}
+      <button type="submit">Guardar cambios</button>
+    </form>
+  </section>
+
   <section class="content-section" aria-labelledby="apps-title">
     <div class="section-heading"><div><p class="eyebrow">Acceso rápido</p><h2 id="apps-title">Aplicaciones</h2></div><span class="section-count">{{ applications|length }} disponibles</span></div>
-    <div class="app-grid">
-      {% for application in applications %}
-        <a class="app-card" href="{{ application.base_url }}">
-          <span class="app-monogram" aria-hidden="true">{{ application.name|first|upper }}</span>
-          <span class="app-copy"><strong>{{ application.name }}</strong><span>{% if application.consumes_quota %}Usa tu cuota diaria{% else %}Acceso incluido{% endif %}</span></span>
-          <svg class="app-arrow" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-      {% empty %}<p class="empty-card">No hay aplicaciones disponibles en este momento.</p>{% endfor %}
-    </div>
+    {% include 'dashboard/_application_cards.html' %}
   </section>
 
   <section class="content-section" aria-labelledby="activity-title">

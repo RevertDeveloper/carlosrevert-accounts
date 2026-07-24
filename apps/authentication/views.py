@@ -14,6 +14,7 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from apps.api.rate_limit import is_rate_limited
+from apps.applications.models import ClientApplication
 
 from .forms import (
     AccountPasswordChangeForm,
@@ -70,7 +71,11 @@ def login_view(request):  # type: ignore[no-untyped-def]
     return render(
         request,
         "authentication/login.html",
-        {"form": form, "next": _safe_next_url(request)},
+        {
+            "form": form,
+            "next": _safe_next_url(request),
+            "applications": ClientApplication.objects.filter(is_active=True),
+        },
     )
 
 

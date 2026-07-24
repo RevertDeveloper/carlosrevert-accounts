@@ -1,10 +1,12 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.applications.models import ClientApplication
+from apps.authentication.forms import AccountUpdateForm
 from apps.usage.models import UsageEvent
 from apps.usage.services.quota_service import get_usage_summary
 
@@ -21,6 +23,11 @@ def health(request: HttpRequest) -> JsonResponse:
 
 @login_required
 def account(request: HttpRequest) -> HttpResponse:
+    account_form = AccountUpdateForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and account_form.is_valid():
+        account_form.save()
+        messages.success(request, "Los datos de tu cuenta se han actualizado.")
+        return redirect("account")
     return render(
         request,
         "dashboard/account.html",
@@ -30,6 +37,7 @@ def account(request: HttpRequest) -> HttpResponse:
                 :10
             ],
             "applications": ClientApplication.objects.filter(is_active=True),
+            "account_form": account_form,
         },
     )
 

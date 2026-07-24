@@ -19,6 +19,17 @@ class ClientApplication(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def favicon_url(self) -> str:
+        """Return the public favicon path used by the app launcher."""
+        if self.slug == "transcriptor":
+            return "/static/favicon_io_cr/transcriptor.svg"
+        favicon_name = {
+            "home": "favicon.svg",
+            "juridia": "apple-touch-icon.png",
+        }.get(self.slug, "favicon.ico")
+        return f"{self.base_url.rstrip('/')}/{favicon_name}"
+
     def rotate_service_key(self) -> str:
         key = secrets.token_urlsafe(32)
         self.service_key_hash = make_password(key)
