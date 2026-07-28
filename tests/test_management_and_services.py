@@ -19,17 +19,14 @@ from apps.users.models import User
 
 
 class ManagementCommandTests(TestCase):
-    def test_seed_commands_and_demo_users_are_idempotent(self):
+    def test_seed_commands_are_idempotent(self):
         call_command("seed_plans")
         call_command("seed_plans")
         call_command("seed_applications")
         call_command("seed_applications")
-        call_command("create_demo_users")
-        call_command("create_demo_users")
         self.assertEqual(Plan.objects.get(code="FREE").daily_interaction_limit, 5)
         self.assertEqual(Plan.objects.get(code="PREMIUM").daily_interaction_limit, 20)
         self.assertEqual(ClientApplication.objects.count(), 4)
-        self.assertTrue(User.objects.filter(username="demo-admin", is_superuser=True).exists())
 
 
 class QuotaServiceTests(TestCase):

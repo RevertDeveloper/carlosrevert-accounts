@@ -1,6 +1,13 @@
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *  # noqa: F403
 
 DEBUG = False
+
+if not SECRET_KEY or len(SECRET_KEY) < 50 or SECRET_KEY.startswith("replace-with-"):  # noqa: F405
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be configured with a random value of at least 50 characters."
+    )
 SESSION_COOKIE_DOMAIN = env("SESSION_COOKIE_DOMAIN", default=".carlosrevert.es")  # noqa: F405
 CSRF_COOKIE_DOMAIN = env("CSRF_COOKIE_DOMAIN", default=".carlosrevert.es")  # noqa: F405
 TRUSTED_PROXY_IPS = env.list("TRUSTED_PROXY_IPS", default=["127.0.0.1"])  # noqa: F405
