@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -63,22 +63,22 @@ def send_email_verification_code(user: User) -> None:
     with transaction.atomic():
         _save_challenge(user, code, now)
 
-    body = render_to_string(
-        "authentication/email_verification_code.txt",
-        {
-            "code": code,
-            "expires_minutes": _verification_settings().ttl_seconds // 60,
-            "user": user,
-        },
-    )
+    context = {
+        "code": code,
+        "expires_minutes": _verification_settings().ttl_seconds // 60,
+        "user": user,
+    }
+    text_body = render_to_string("authentication/email_verification_code.txt", context)
+    html_body = render_to_string("authentication/email_verification_code.html", context)
     try:
-        send_mail(
-            subject="Verifica tu correo electrónico",
-            message=body,
+        message = EmailMultiAlternatives(
+            subject="Código de verificación de Carlos Revert",
+            body=text_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+            to=[user.email],
         )
+        message.attach_alternative(html_body, "text/html")
+        message.send(fail_silently=False)
     except Exception as exc:  # noqa: BLE001
         raise EmailVerificationDeliveryError from exc
 

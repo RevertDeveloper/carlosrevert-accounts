@@ -7,6 +7,20 @@
     <h1>Verifica tu correo</h1>
     <p class="heading-copy">Te hemos enviado un código de 6 cifras. Introdúcelo para activar tu cuenta.</p>
   </div>
+  <aside class="verification-delivery" aria-labelledby="delivery-title" role="status">
+    <div class="verification-delivery-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/><path d="m16.5 3.5 1 1 2-2"/></svg>
+    </div>
+    <div>
+      <p class="verification-kicker">Correo enviado</p>
+      <h2 id="delivery-title">Revisa <strong>{{ form.email.value|default:"tu correo" }}</strong></h2>
+      <p>Busca el asunto <strong>“Código de verificación de Carlos Revert”</strong>. El código caduca en 10 minutos.</p>
+    </div>
+  </aside>
+  <aside class="verification-spam-tip" aria-label="Consejo si el correo no aparece">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 8v4m0 4h.01"/><path d="M10.29 3.86 2.82 16.3A2 2 0 0 0 4.53 19h14.94a2 2 0 0 0 1.71-2.7L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+    <p><strong>¿No lo ves?</strong> Revisa la carpeta <strong>Spam</strong> o <strong>Correo no deseado</strong>. Si aparece ahí, márcalo como “No es spam” para recibir los próximos correos correctamente.</p>
+  </aside>
   <form class="auth-form register-form" method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
@@ -23,7 +37,7 @@
   <form method="post" action="{% url 'email_verification_resend' %}" class="verification-resend-form">
     {% csrf_token %}
     <input type="hidden" name="email" value="{{ form.email.value|default:'' }}">
-    <button type="submit" class="text-button">Reenviar código</button>
+    <button type="submit" class="text-button">No he recibido el correo · Reenviar código</button>
   </form>
   <p><a href="{% url 'login' %}">Volver a iniciar sesión</a></p>
 </section>

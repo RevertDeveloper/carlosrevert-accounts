@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Código de verificación</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f2ed;color:#17202b;font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f2ed;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background:#fffefa;border:1px solid #dfe3e6;border-radius:20px;overflow:hidden;">
+            <tr>
+              <td style="padding:28px 32px 18px;">
+                <span style="display:inline-block;padding:7px 10px;border-radius:999px;background:#eaf0ff;color:#245bdb;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">Carlos Revert Cuenta</span>
+                <h1 style="margin:20px 0 10px;color:#17202b;font-size:30px;line-height:1.16;font-weight:700;letter-spacing:-0.6px;">Verifica tu correo</h1>
+                <p style="margin:0;color:#64707d;font-size:16px;line-height:1.55;">Hola {{ user.get_username }}, usa este código para activar tu cuenta:</p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:20px 32px 26px;">
+                <div style="padding:20px 24px;border:1px solid #c7d6ff;border-radius:16px;background:#f5f8ff;color:#245bdb;font-size:42px;font-weight:800;letter-spacing:10px;line-height:1.1;text-align:center;">{{ code }}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 32px;">
+                <p style="margin:0 0 14px;color:#17202b;font-size:14px;line-height:1.55;">Este código caduca en {{ expires_minutes }} minutos y solo puede utilizarse una vez.</p>
+                <p style="margin:0;color:#64707d;font-size:13px;line-height:1.55;">Si no has creado esta cuenta, puedes ignorar este mensaje.</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:18px 0 0;color:#7a838c;font-size:12px;line-height:1.5;text-align:center;">Este es un correo automático de Carlos Revert.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

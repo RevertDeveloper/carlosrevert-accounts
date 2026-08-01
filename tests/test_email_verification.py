@@ -44,6 +44,9 @@ class EmailVerificationTests(TestCase):
         self.assertFalse(user.email_verified)
         self.assertEqual(len(mail.outbox), 1)
         code = self._code_from_last_email()
+        self.assertEqual(mail.outbox[0].subject, "Código de verificación de Carlos Revert")
+        self.assertEqual(mail.outbox[0].alternatives[0].mimetype, "text/html")
+        self.assertIn(code, mail.outbox[0].alternatives[0].content)
 
         verified = self.client.post(
             reverse("api-verify-email"), {"email": user.email, "code": code}
@@ -108,7 +111,10 @@ class EmailVerificationTests(TestCase):
         challenge.save(update_fields=("expires_at",))
         self.assertIsNone(verify_email_code(user.email, self._code_from_last_email()))
 
-        with patch("apps.authentication.services.send_mail", side_effect=RuntimeError("SMTP down")):
+        with patch(
+            "apps.authentication.services.EmailMultiAlternatives.send",
+            side_effect=RuntimeError("SMTP down"),
+        ):
             with self.assertRaises(EmailVerificationDeliveryError):
                 send_email_verification_code(user)
         user.refresh_from_db()
@@ -140,7 +146,10 @@ class EmailVerificationTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("email_verification"))
-        self.assertContains(self.client.get(reverse("email_verification")), "Verifica tu correo")
+        page = self.client.get(reverse("email_verification"))
+        self.assertContains(page, "Verifica tu correo")
+        self.assertContains(page, "Revisa la carpeta")
+        self.assertContains(page, "Spam")
         self.assertNotIn("_auth_user_id", self.client.session)
 
     def test_email_change_requires_new_verification(self):
@@ -177,7 +186,10 @@ class EmailVerificationTests(TestCase):
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_registration_delivery_failure_returns_service_unavailable_api(self):
-        with patch("apps.authentication.services.send_mail", side_effect=RuntimeError("SMTP down")):
+        with patch(
+            "apps.authentication.services.EmailMultiAlternatives.send",
+            side_effect=RuntimeError("SMTP down"),
+        ):
             response = self.client.post(reverse("api-register"), self._register_payload())
 
         self.assertEqual(response.status_code, 503)

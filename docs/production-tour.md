@@ -188,7 +188,7 @@ docker inspect carlosrevert-accounts-web-1 --format '{{.State.Health.Status}} {{
 
 Los logs no deben contener contraseñas, cookies, claves de servicio, prompts, respuestas o audio.
 
-## 12. Correo y recuperación de contraseña
+## 12. Correo, entrega y recuperación de contraseña
 
 Producción usa SMTP y nunca imprime enlaces de recuperación en logs. Configura en `.env`:
 
@@ -221,6 +221,8 @@ send_mail("Prueba Accounts", "SMTP operativo", None, ["TU_EMAIL_REAL"], fail_sil
 ```
 
 Sal con `exit()`. Prueba primero un alta en `https://cuenta.carlosrevert.es/register/`, introduce el código recibido y confirma el acceso. Después prueba `https://cuenta.carlosrevert.es/password-reset/`.
+
+En Resend, abre **Domains > carlosrevert.es** y confirma que SPF, DKIM y el dominio aparecen como verificados. En **Emails**, abre una entrega de prueba y comprueba en los encabezados `spf=pass`, `dkim=pass` y `dmarc=pass`. Publica un registro DMARC con informes, empieza por `p=none` y, cuando todas las fuentes pasen durante un periodo de observación, avanza a `p=quarantine`.
 
 ## 13. Backup
 
