@@ -6,7 +6,7 @@ from apps.users.models import User
 
 
 class AuthenticationApiTests(TestCase):
-    def test_registration_creates_free_user_and_session(self):
+    def test_registration_creates_demo_plan_user_and_session(self):
         response = self.client.post(
             reverse("api-register"),
             {
@@ -19,7 +19,9 @@ class AuthenticationApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         user = User.objects.get(email="ana@example.com")
         self.assertTrue(user.check_password("CorrectHorseBatteryStaple123!"))
-        self.assertEqual(UserPlan.objects.get(user=user).plan.code, "FREE")
+        assignment = UserPlan.objects.get(user=user)
+        self.assertEqual(assignment.plan.code, "FREE")
+        self.assertEqual(assignment.plan.name, "Acceso de demostración")
         self.assertIn("_auth_user_id", self.client.session)
 
     def test_duplicate_email_and_weak_password_are_rejected(self):

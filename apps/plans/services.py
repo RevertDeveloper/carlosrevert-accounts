@@ -10,7 +10,12 @@ if TYPE_CHECKING:
 
 def assign_default_plan(user: "User") -> UserPlan:
     plan, _ = Plan.objects.get_or_create(
-        code="FREE", defaults={"name": "Free", "daily_interaction_limit": 5, "is_active": True}
+        code="FREE",
+        defaults={
+            "name": "Acceso de demostración",
+            "daily_interaction_limit": 5,
+            "is_active": True,
+        },
     )
     assignment, created = UserPlan.objects.get_or_create(user=user, defaults={"plan": plan})
     if created:

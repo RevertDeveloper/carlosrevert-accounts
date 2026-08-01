@@ -6,13 +6,18 @@ from django.db import models
 
 class DailyUsage(models.Model):  # noqa: DJ008
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="daily_usages"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="daily_usages",
+        verbose_name="usuario",
     )
-    date = models.DateField()
-    interaction_count = models.PositiveIntegerField(default=0)
-    updated_at = models.DateTimeField(auto_now=True)
+    date = models.DateField("fecha")
+    interaction_count = models.PositiveIntegerField("interacciones", default=0)
+    updated_at = models.DateTimeField("actualizado el", auto_now=True)
 
     class Meta:
+        verbose_name = "uso diario"
+        verbose_name_plural = "usos diarios"
         constraints = [
             models.UniqueConstraint(fields=("user", "date"), name="unique_daily_usage_per_user")
         ]
@@ -21,33 +26,43 @@ class DailyUsage(models.Model):  # noqa: DJ008
 
 class UsageEvent(models.Model):  # noqa: DJ008
     class Status(models.TextChoices):
-        AUTHORIZED = "authorized", "Authorized"
-        PROCESSING = "processing", "Processing"
-        COMPLETED = "completed", "Completed"
-        FAILED = "failed", "Failed"
-        REJECTED_QUOTA = "rejected_quota", "Rejected by quota"
-        REJECTED_AUTH = "rejected_auth", "Rejected by authentication"
-        CANCELLED = "cancelled", "Cancelled"
+        AUTHORIZED = "authorized", "Autorizado"
+        PROCESSING = "processing", "En proceso"
+        COMPLETED = "completed", "Completado"
+        FAILED = "failed", "Fallido"
+        REJECTED_QUOTA = "rejected_quota", "Rechazado por cuota"
+        REJECTED_AUTH = "rejected_auth", "Rechazado por autenticación"
+        CANCELLED = "cancelled", "Cancelado"
 
-    request_id = models.UUIDField(unique=True, default=uuid.uuid4)
+    request_id = models.UUIDField("ID de solicitud", unique=True, default=uuid.uuid4)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="usage_events"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="usage_events",
+        verbose_name="usuario",
     )
     application = models.ForeignKey(
-        "applications.ClientApplication", on_delete=models.PROTECT, related_name="usage_events"
+        "applications.ClientApplication",
+        on_delete=models.PROTECT,
+        related_name="usage_events",
+        verbose_name="aplicación",
     )
-    action = models.CharField(max_length=80)
-    status = models.CharField(max_length=30, choices=Status.choices)
-    interaction_cost = models.PositiveIntegerField(default=1)
-    metadata = models.JSONField(default=dict, blank=True)
-    error_code = models.CharField(max_length=80, blank=True)
-    processing_time_ms = models.PositiveIntegerField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    validated_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    action = models.CharField("acción", max_length=80)
+    status = models.CharField("estado", max_length=30, choices=Status.choices)
+    interaction_cost = models.PositiveIntegerField("coste de interacción", default=1)
+    metadata = models.JSONField("metadatos", default=dict, blank=True)
+    error_code = models.CharField("código de error", max_length=80, blank=True)
+    processing_time_ms = models.PositiveIntegerField(
+        "tiempo de proceso (ms)", null=True, blank=True
+    )
+    created_at = models.DateTimeField("creado el", auto_now_add=True)
+    validated_at = models.DateTimeField("validado el", null=True, blank=True)
+    completed_at = models.DateTimeField("completado el", null=True, blank=True)
 
     class Meta:
         ordering = ("-created_at",)
+        verbose_name = "evento de consumo"
+        verbose_name_plural = "eventos de consumo"
         indexes = [
             models.Index(fields=("user", "created_at"), name="usage_usage_user_id_40f9db_idx"),
             models.Index(fields=("application", "status"), name="usage_app_status_idx"),
@@ -57,11 +72,24 @@ class UsageEvent(models.Model):  # noqa: DJ008
 class InteractionReservation(models.Model):  # noqa: DJ008
     """Internal idempotency guard created before any quota increment."""
 
-    request_id = models.UUIDField(unique=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    application = models.ForeignKey("applications.ClientApplication", on_delete=models.PROTECT)
+    request_id = models.UUIDField("ID de solicitud", unique=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="usuario"
+    )
+    application = models.ForeignKey(
+        "applications.ClientApplication", on_delete=models.PROTECT, verbose_name="aplicación"
+    )
     action = models.CharField(max_length=80)
     event = models.OneToOneField(
-        UsageEvent, null=True, blank=True, on_delete=models.CASCADE, related_name="reservation"
+        UsageEvent,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="reservation",
+        verbose_name="evento",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "reserva de interacción"
+        verbose_name_plural = "reservas de interacción"

@@ -5,16 +5,18 @@ from django.db import models
 
 
 class ClientApplication(models.Model):
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
-    base_url = models.URLField()
-    is_active = models.BooleanField(default=True)
-    consumes_quota = models.BooleanField(default=True)
+    name = models.CharField("nombre", max_length=100)
+    slug = models.SlugField("identificador", unique=True)
+    base_url = models.URLField("URL base")
+    is_active = models.BooleanField("activa", default=True)
+    consumes_quota = models.BooleanField("consume cuota", default=True)
     service_key_hash = models.CharField(max_length=128, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField("creada el", auto_now_add=True)
 
     class Meta:
         ordering = ("name",)
+        verbose_name = "aplicación cliente"
+        verbose_name_plural = "aplicaciones cliente"
 
     def __str__(self) -> str:
         return self.name

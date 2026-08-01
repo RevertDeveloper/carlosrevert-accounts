@@ -24,7 +24,9 @@ class ManagementCommandTests(TestCase):
         call_command("seed_plans")
         call_command("seed_applications")
         call_command("seed_applications")
-        self.assertEqual(Plan.objects.get(code="FREE").daily_interaction_limit, 5)
+        demo_plan = Plan.objects.get(code="FREE")
+        self.assertEqual(demo_plan.name, "Acceso de demostración")
+        self.assertEqual(demo_plan.daily_interaction_limit, 5)
         self.assertEqual(Plan.objects.get(code="PREMIUM").daily_interaction_limit, 20)
         self.assertEqual(ClientApplication.objects.count(), 4)
 
