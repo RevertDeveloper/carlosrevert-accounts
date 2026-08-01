@@ -87,9 +87,10 @@ Los usuarios y registros de consumo no pueden borrarse desde Admin. Una baja se 
 ### Registro realizado por el usuario
 
 1. Abre `https://cuenta.carlosrevert.es/register/` en una ventana privada.
-2. Completa usuario, email, nombre, contraseña y aceptación legal.
-3. Al terminar entrarás automáticamente en **Mi cuenta**.
-4. Comprueba que aparece `FREE`, límite 5 y saldo 5.
+2. Completa usuario, email, contraseña y aceptación legal.
+3. Introduce el código de 6 cifras recibido por email en `/email-verification/`.
+4. Tras verificarlo entrarás en **Mi cuenta**.
+5. Comprueba que aparece `FREE`, límite 5 y saldo 5.
 
 Todo usuario nuevo recibe FREE automáticamente y genera un registro de asignación inicial.
 
@@ -199,6 +200,10 @@ EMAIL_HOST_USER=USUARIO_SMTP
 EMAIL_HOST_PASSWORD=CONTRASENA_SMTP
 EMAIL_USE_TLS=true
 DEFAULT_FROM_EMAIL=no-reply@carlosrevert.es
+EMAIL_VERIFICATION_CODE_TTL_SECONDS=600
+EMAIL_VERIFICATION_MAX_ATTEMPTS=5
+EMAIL_VERIFICATION_RESEND_INTERVAL_SECONDS=60
+EMAIL_VERIFICATION_RESEND_LIMIT=5
 ```
 
 Después recrea solo web y prueba con una dirección controlada:
@@ -215,7 +220,7 @@ from django.core.mail import send_mail
 send_mail("Prueba Accounts", "SMTP operativo", None, ["TU_EMAIL_REAL"], fail_silently=False)
 ```
 
-Sal con `exit()`. Después prueba `https://cuenta.carlosrevert.es/password-reset/`.
+Sal con `exit()`. Prueba primero un alta en `https://cuenta.carlosrevert.es/register/`, introduce el código recibido y confirma el acceso. Después prueba `https://cuenta.carlosrevert.es/password-reset/`.
 
 ## 13. Backup
 
@@ -261,5 +266,5 @@ Si la nueva imagen falla, vuelve al commit conocido sin borrar `postgres_data` y
 - [ ] Sesión y logout se comparten entre cinco dominios.
 - [ ] Quinta interacción FREE autorizada y sexta rechazada.
 - [ ] Métricas staff visibles.
-- [ ] SMTP y recuperación probados.
+- [ ] SMTP, verificación de correo y recuperación probados.
 - [ ] Backup creado y restauración ensayada.

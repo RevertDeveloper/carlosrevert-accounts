@@ -31,7 +31,10 @@ class WebViewsTests(TestCase):
         self.assertNotContains(login_response, "https://transcriptor.carlosrevert.es/favicon.ico")
 
         user = User.objects.create_user(
-            username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"
+            username="ana",
+            email="ana@example.com",
+            password="CorrectHorseBatteryStaple123!",
+            email_verified=True,
         )
         self.client.force_login(user)
         account_response = self.client.get(reverse("account"))
@@ -59,7 +62,7 @@ class WebViewsTests(TestCase):
             reverse("account"),
             {
                 "username": "ana-nueva",
-                "email": "nuevo@example.com",
+                "email": "ana@example.com",
                 "first_name": "Ana",
                 "last_name": "Revert",
             },
@@ -67,7 +70,7 @@ class WebViewsTests(TestCase):
         self.assertRedirects(response, reverse("account"))
         user.refresh_from_db()
         self.assertEqual(user.username, "ana-nueva")
-        self.assertEqual(user.email, "nuevo@example.com")
+        self.assertEqual(user.email, "ana@example.com")
         self.assertEqual(user.first_name, "Ana")
         self.assertEqual(user.last_name, "Revert")
 
@@ -89,7 +92,10 @@ class WebViewsTests(TestCase):
 
     def test_login_only_redirects_to_carlosrevert_hosts(self):
         User.objects.create_user(
-            username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"
+            username="ana",
+            email="ana@example.com",
+            password="CorrectHorseBatteryStaple123!",
+            email_verified=True,
         )
         external = self.client.post(
             f"{reverse('login')}?next=https://evil.example/phishing",

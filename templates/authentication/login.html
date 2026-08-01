@@ -4,7 +4,7 @@
 <div class="auth-page">
   <div class="auth-intro"><p class="eyebrow">Carlos Revert Cuenta</p><h1>Iniciar sesión</h1><p class="heading-copy">Accede a tus aplicaciones desde un mismo lugar.</p></div>
   <form method="post" class="auth-form">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">{{ form.as_p }}<button type="submit">Entrar</button></form>
-  <p class="auth-recovery"><a href="{% url 'password_reset' %}">He olvidado mi contraseña</a></p>
+  <p class="auth-recovery"><a href="{% url 'password_reset' %}">He olvidado mi contraseña</a> · <a href="{% url 'email_verification' %}">Verificar mi correo</a></p>
 
   <section class="content-section auth-apps" aria-labelledby="login-apps-title">
     <div class="section-heading"><div><p class="eyebrow">Acceso directo</p><h2 id="login-apps-title">Tus aplicaciones</h2></div><span class="section-count">{{ applications|length }} disponibles</span></div>

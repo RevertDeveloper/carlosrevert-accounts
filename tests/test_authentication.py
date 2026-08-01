@@ -1,3 +1,4 @@
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
@@ -6,7 +7,7 @@ from apps.users.models import User
 
 
 class AuthenticationApiTests(TestCase):
-    def test_registration_creates_demo_plan_user_and_session(self):
+    def test_registration_creates_pending_demo_plan_user_without_session(self):
         response = self.client.post(
             reverse("api-register"),
             {
@@ -22,7 +23,9 @@ class AuthenticationApiTests(TestCase):
         assignment = UserPlan.objects.get(user=user)
         self.assertEqual(assignment.plan.code, "FREE")
         self.assertEqual(assignment.plan.name, "Acceso de demostración")
-        self.assertIn("_auth_user_id", self.client.session)
+        self.assertFalse(user.email_verified)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_duplicate_email_and_weak_password_are_rejected(self):
         User.objects.create_user(
@@ -63,7 +66,10 @@ class AuthenticationApiTests(TestCase):
 
     def test_login_logout_and_blocked_user(self):
         user = User.objects.create_user(
-            username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"
+            username="ana",
+            email="ana@example.com",
+            password="CorrectHorseBatteryStaple123!",
+            email_verified=True,
         )
         login = self.client.post(
             reverse("api-login"),

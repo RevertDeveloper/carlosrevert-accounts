@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Count
 from django.utils.decorators import method_decorator
@@ -9,6 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.applications.models import ClientApplication
+from apps.authentication.services import (
+    EmailVerificationDeliveryError,
+    send_email_verification_code,
+    verify_email_code,
+)
 from apps.usage.models import UsageEvent
 from apps.usage.services.quota_service import (
     QuotaError,
@@ -18,18 +24,21 @@ from apps.usage.services.quota_service import (
     reserve_interaction,
     validate_interaction,
 )
+from apps.users.models import User
 
 from .permissions import IsInternalService
-from .rate_limit import is_rate_limited
+from .rate_limit import is_rate_limited, is_rate_limited_identifier
 from .serializers import (
     CompleteSerializer,
     FailSerializer,
     LoginSerializer,
     RegisterSerializer,
+    ResendEmailVerificationSerializer,
     ReserveSerializer,
     UsageEventSerializer,
     UserSerializer,
     ValidateReservationSerializer,
+    VerifyEmailSerializer,
 )
 
 
@@ -75,10 +84,87 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        login(request, user, backend="apps.authentication.backends.EmailOrUsernameModelBackend")
+        try:
+            send_email_verification_code(user)
+        except EmailVerificationDeliveryError:
+            return Response(
+                {"detail": "La cuenta se ha creado, pero no se pudo enviar el código."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         return Response(
-            {"authenticated": True, "user": UserSerializer(user).data},
+            {
+                "authenticated": False,
+                "email_verification_required": True,
+                "email": user.email,
+            },
             status=status.HTTP_201_CREATED,
+        )
+
+
+@extend_schema(request=VerifyEmailSerializer, responses={200: OpenApiTypes.OBJECT})
+class VerifyEmailView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):  # type: ignore[no-untyped-def]
+        if is_rate_limited(request, "verify-email", 10, 600):
+            return Response(
+                {"detail": "Demasiados intentos de verificación."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = verify_email_code(
+            serializer.validated_data["email"], serializer.validated_data["code"]
+        )
+        if user is None:
+            return Response(
+                {"detail": "El código no es válido o ha caducado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        login(request, user, backend="apps.authentication.backends.EmailOrUsernameModelBackend")
+        return Response({"authenticated": True, "user": UserSerializer(user).data})
+
+
+@extend_schema(request=ResendEmailVerificationSerializer, responses={202: OpenApiTypes.OBJECT})
+class ResendEmailVerificationView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):  # type: ignore[no-untyped-def]
+        serializer = ResendEmailVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        limited = (
+            is_rate_limited(
+                request,
+                "email-verification-resend-ip",
+                settings.EMAIL_VERIFICATION_RESEND_LIMIT,
+                3600,
+            )
+            or is_rate_limited_identifier(
+                "email-verification-resend-email",
+                email,
+                settings.EMAIL_VERIFICATION_RESEND_LIMIT,
+                3600,
+            )
+            or is_rate_limited_identifier(
+                "email-verification-resend-cooldown",
+                email,
+                1,
+                settings.EMAIL_VERIFICATION_RESEND_INTERVAL_SECONDS,
+            )
+        )
+        if not limited:
+            user = User.objects.filter(
+                email__iexact=email, is_active=True, is_blocked=False, email_verified=False
+            ).first()
+            if user is not None:
+                try:
+                    send_email_verification_code(user)
+                except EmailVerificationDeliveryError:
+                    pass
+        return Response(
+            {"detail": "Si existe una cuenta pendiente, recibirás un nuevo código."},
+            status=status.HTTP_202_ACCEPTED,
         )
 
 

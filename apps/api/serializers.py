@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "first_name", "last_name", "plan")
+        fields = ("id", "username", "email", "email_verified", "first_name", "last_name", "plan")
 
     def get_plan(self, user: User) -> str | None:
         return (
@@ -56,6 +56,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+    code = serializers.RegexField(regex=r"^[0-9]{6}$", max_length=6, min_length=6)
+
+    def validate_email(self, value: str) -> str:
+        return value.lower()
+
+
+class ResendEmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+
+    def validate_email(self, value: str) -> str:
+        return value.lower()
 
 
 class LoginSerializer(serializers.Serializer):

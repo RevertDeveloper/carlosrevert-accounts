@@ -1,3 +1,5 @@
+import hashlib
+
 from django.conf import settings
 from django.core.cache import cache
 
@@ -13,8 +15,20 @@ def get_client_ip(request) -> str:  # type: ignore[no-untyped-def]
 
 
 def is_rate_limited(request, scope: str, limit: int, window_seconds: int) -> bool:  # type: ignore[no-untyped-def]
-    address = get_client_ip(request)
-    key = f"rate-limit:{scope}:{address}"
+    return is_rate_limited_identifier(
+        scope,
+        get_client_ip(request),
+        limit,
+        window_seconds,
+    )
+
+
+def is_rate_limited_identifier(
+    scope: str, identifier: str, limit: int, window_seconds: int
+) -> bool:
+    """Rate-limit a non-IP identifier without storing it in the cache key."""
+    digest = hashlib.sha256(identifier.strip().lower().encode("utf-8")).hexdigest()
+    key = f"rate-limit:{scope}:{digest}"
     if cache.add(key, 1, timeout=window_seconds):
         return False
     try:

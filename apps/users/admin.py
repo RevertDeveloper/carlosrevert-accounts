@@ -30,6 +30,7 @@ class UserAdminForm(UserChangeForm):
             "last_name": "Apellidos",
             "email": "Correo electrónico",
             "is_active": "Cuenta activa",
+            "email_verified": "Correo verificado",
             "is_blocked": "Cuenta bloqueada",
             "is_staff": "Acceso al administrador",
             "is_superuser": "Superusuario",
@@ -45,9 +46,15 @@ class UserAdminForm(UserChangeForm):
 class CustomUserAdmin(UserAdmin):
     form = UserAdminForm
     list_display = (
-        "username", "email", "current_plan", "active_status", "blocked_status", "staff_status"
+        "username",
+        "email",
+        "current_plan",
+        "active_status",
+        "email_verified_status",
+        "blocked_status",
+        "staff_status",
     )
-    list_filter = ("is_active", "is_blocked", "is_staff", "user_plan__plan")
+    list_filter = ("is_active", "email_verified", "is_blocked", "is_staff", "user_plan__plan")
     search_fields = ("username", "email", "first_name", "last_name")
     readonly_fields = ("created_at", "updated_at", "last_login", "date_joined")
     fieldsets = (
@@ -55,7 +62,16 @@ class CustomUserAdmin(UserAdmin):
         ("Datos personales", {"fields": ("first_name", "last_name", "email")}),
         (
             "Plan y acceso",
-            {"fields": ("plan", "is_active", "is_blocked", "is_staff", "is_superuser")},
+            {
+                "fields": (
+                    "plan",
+                    "is_active",
+                    "email_verified",
+                    "is_blocked",
+                    "is_staff",
+                    "is_superuser",
+                )
+            },
         ),
         ("Permisos", {"fields": ("groups", "user_permissions")}),
         ("Fechas", {"fields": ("last_login", "date_joined", "created_at", "updated_at")}),
@@ -85,6 +101,10 @@ class CustomUserAdmin(UserAdmin):
     @admin.display(description="Cuenta activa", boolean=True)
     def active_status(self, user: User) -> bool:
         return user.is_active
+
+    @admin.display(description="Correo verificado", boolean=True)
+    def email_verified_status(self, user: User) -> bool:
+        return user.email_verified
 
     @admin.display(description="Cuenta bloqueada", boolean=True)
     def blocked_status(self, user: User) -> bool:

@@ -1,0 +1,11 @@
+Hola {{ user.get_username }},
+
+Tu código para verificar tu cuenta de Carlos Revert es:
+
+{{ code }}
+
+Este código caduca en {{ expires_minutes }} minutos y solo puede utilizarse una vez.
+
+Si no has creado esta cuenta, puedes ignorar este mensaje.
+
+Carlos Revert

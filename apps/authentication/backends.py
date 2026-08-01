@@ -14,6 +14,12 @@ class EmailOrUsernameModelBackend(ModelBackend):
         user = User.objects.filter(
             Q(username__iexact=identifier) | Q(email__iexact=identifier)
         ).first()
-        if user and user.is_active and not user.is_blocked and user.check_password(password):
+        if (
+            user
+            and user.is_active
+            and not user.is_blocked
+            and user.check_password(password)
+            and (user.email_verified or user.is_staff or user.is_superuser)
+        ):
             return user
         return None

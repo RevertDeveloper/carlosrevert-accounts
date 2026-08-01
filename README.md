@@ -42,7 +42,7 @@ La documentación transversal incluye el [tour completo de producción](docs/pro
 
 - `GET /api/v1/auth/me/`
 - `GET /api/v1/auth/csrf/`
-- `POST /api/v1/auth/register/`, `login/`, `logout/`
+- `POST /api/v1/auth/register/`, `verify-email/`, `verify-email/resend/`, `login/`, `logout/`
 - `GET /api/v1/usage/summary/`, `history/`
 - `POST /api/v1/usage/reserve/`
 - `POST /api/v1/usage/{request_id}/complete/` y `fail/` para servicios internos
@@ -69,4 +69,4 @@ FREE recibe 5 interacciones/día; PREMIUM, 20. El contador es común a todas las
 
 ## Limitaciones y evolución
 
-No hay pagos ni migración de identidades Keycloak. El cambio de PREMIUM es manual en Admin. El correo de verificación y una infraestructura de rate limit distribuida (Redis) son mejoras previstas antes de gran escala.
+No hay pagos ni migración de identidades Keycloak. El cambio de PREMIUM es manual en Admin. El correo de verificación usa códigos de un solo uso y límites en la caché PostgreSQL; Redis distribuido queda como evolución para gran escala.

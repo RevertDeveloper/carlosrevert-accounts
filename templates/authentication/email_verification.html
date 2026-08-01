@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Verificar correo · Carlos Revert{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="auth-intro">
+    <p class="eyebrow">Confirma tu identidad</p>
+    <h1>Verifica tu correo</h1>
+    <p class="heading-copy">Te hemos enviado un código de 6 cifras. Introdúcelo para activar tu cuenta.</p>
+  </div>
+  <form class="auth-form register-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if form.non_field_errors %}<div class="errorlist" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="register-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <button type="submit">Verificar correo</button>
+  </form>
+  <form method="post" action="{% url 'email_verification_resend' %}" class="verification-resend-form">
+    {% csrf_token %}
+    <input type="hidden" name="email" value="{{ form.email.value|default:'' }}">
+    <button type="submit" class="text-button">Reenviar código</button>
+  </form>
+  <p><a href="{% url 'login' %}">Volver a iniciar sesión</a></p>
+</section>
+{% endblock %}
