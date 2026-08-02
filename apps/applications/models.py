@@ -4,6 +4,24 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
 
 
+APPLICATION_LAUNCHER_ORDER = ("home", "juridia", "clark", "transcriptor")
+
+
+class ClientApplicationQuerySet(models.QuerySet):
+    def ordered_for_launcher(self):
+        launcher_order = models.Case(
+            *(
+                models.When(slug=slug, then=models.Value(position))
+                for position, slug in enumerate(APPLICATION_LAUNCHER_ORDER)
+            ),
+            default=models.Value(len(APPLICATION_LAUNCHER_ORDER)),
+            output_field=models.IntegerField(),
+        )
+        return self.annotate(_launcher_order=launcher_order).order_by(
+            "_launcher_order", "name"
+        )
+
+
 class ClientApplication(models.Model):
     name = models.CharField("nombre", max_length=100)
     slug = models.SlugField("identificador", unique=True)
@@ -12,6 +30,8 @@ class ClientApplication(models.Model):
     consumes_quota = models.BooleanField("consume cuota", default=True)
     service_key_hash = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField("creada el", auto_now_add=True)
+
+    objects = ClientApplicationQuerySet.as_manager()
 
     class Meta:
         ordering = ("name",)

@@ -66,7 +66,7 @@ def account(request: HttpRequest) -> HttpResponse:
             "events": UsageEvent.objects.filter(user=request.user).select_related("application")[
                 :10
             ],
-            "applications": ClientApplication.objects.filter(is_active=True),
+            "applications": ClientApplication.objects.filter(is_active=True).ordered_for_launcher(),
             "account_form": account_form,
         },
     )

@@ -171,7 +171,7 @@ def login_view(request):  # type: ignore[no-untyped-def]
         {
             "form": form,
             "next": _safe_next_url(request),
-            "applications": ClientApplication.objects.filter(is_active=True),
+            "applications": ClientApplication.objects.filter(is_active=True).ordered_for_launcher(),
         },
     )
 
