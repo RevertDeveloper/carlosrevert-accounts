@@ -1,3 +1,5 @@
+"""Pruebas del flujo de verificación de correo y de sus medidas antifraude."""
+
 import re
 from datetime import timedelta
 from unittest.mock import patch
@@ -19,6 +21,8 @@ from apps.users.models import User
 
 
 class EmailVerificationTests(TestCase):
+    """Cubre códigos de un solo uso, caducidad, reenvío y fallos de entrega."""
+
     def setUp(self):
         cache.clear()
 

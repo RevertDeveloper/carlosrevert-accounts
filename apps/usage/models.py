@@ -1,3 +1,5 @@
+"""Modelos que registran el consumo diario y el ciclo de vida de cada interacción."""
+
 import uuid
 
 from django.conf import settings
@@ -5,6 +7,8 @@ from django.db import models
 
 
 class DailyUsage(models.Model):  # noqa: DJ008
+    """Contador agregado por usuario y fecha, protegido por una restricción única."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -25,6 +29,8 @@ class DailyUsage(models.Model):  # noqa: DJ008
 
 
 class UsageEvent(models.Model):  # noqa: DJ008
+    """Evento auditable de una interacción autorizada, rechazada o finalizada."""
+
     class Status(models.TextChoices):
         AUTHORIZED = "authorized", "Autorizado"
         PROCESSING = "processing", "En proceso"
@@ -70,7 +76,7 @@ class UsageEvent(models.Model):  # noqa: DJ008
 
 
 class InteractionReservation(models.Model):  # noqa: DJ008
-    """Internal idempotency guard created before any quota increment."""
+    """Guardia interna de idempotencia creada antes de incrementar la cuota."""
 
     request_id = models.UUIDField("ID de solicitud", unique=True)
     user = models.ForeignKey(

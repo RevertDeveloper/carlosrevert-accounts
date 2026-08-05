@@ -1,4 +1,4 @@
-"""Transactional, idempotent quota operations."""
+"""Operaciones transaccionales e idempotentes del consumo de cuota."""
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class QuotaError(Exception):
+    """Error de dominio que conserva el código y estado HTTP que debe devolver la API."""
+
     def __init__(self, code: str, message: str, http_status: int = 403) -> None:
         self.code = code
         self.message = message
@@ -27,6 +29,8 @@ class QuotaError(Exception):
 
 @dataclass(frozen=True)
 class QuotaStatus:
+    """Resumen inmutable de la cuota disponible para una cuenta en el día actual."""
+
     plan: str
     daily_limit: int
     used_today: int
@@ -35,16 +39,18 @@ class QuotaStatus:
 
 
 def _today() -> date:
+    """Devuelve la fecha local configurada por Django para agrupar el consumo diario."""
     return timezone.localdate()
 
 
 def _resets_at() -> datetime:
+    """Calcula el inicio del siguiente día local, momento en que se reinicia la cuota."""
     tomorrow = _today() + timedelta(days=1)
     return timezone.make_aware(datetime.combine(tomorrow, time.min))
 
 
 def _clean_metadata(metadata: dict[str, Any] | None) -> dict[str, Any]:
-    """Avoid retaining prompts, answers and other potentially sensitive bodies."""
+    """Elimina prompts, respuestas y otros cuerpos potencialmente sensibles."""
     if not metadata:
         return {}
     forbidden = {
@@ -64,6 +70,7 @@ def _clean_metadata(metadata: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def _assignment_for(user: "User") -> UserPlan:
+    """Obtiene el plan asignado al usuario o informa de una configuración incompleta."""
     try:
         return UserPlan.objects.select_related("plan").get(user=user)
     except UserPlan.DoesNotExist as exc:
@@ -71,6 +78,7 @@ def _assignment_for(user: "User") -> UserPlan:
 
 
 def _locked_usage(user: "User") -> DailyUsage:
+    """Obtiene y bloquea el contador diario, creándolo de forma segura si no existe."""
     today = _today()
     try:
         return DailyUsage.objects.select_for_update().get(user=user, date=today)
@@ -84,11 +92,13 @@ def _locked_usage(user: "User") -> DailyUsage:
 
 
 def _status_from(assignment: UserPlan, used: int) -> QuotaStatus:
+    """Construye el resumen de cuota a partir del plan y las interacciones consumidas."""
     limit = assignment.plan.daily_interaction_limit
     return QuotaStatus(assignment.plan.code, limit, used, max(0, limit - used), _resets_at())
 
 
 def check_quota(user: "User") -> QuotaStatus:
+    """Consulta la cuota sin modificarla y valida que la cuenta pueda consumirla."""
     if not user.is_authenticated:
         raise QuotaError("authentication_required", "Debes iniciar sesión.", 401)
     if not user.is_active or user.is_blocked:
@@ -101,7 +111,7 @@ def check_quota(user: "User") -> QuotaStatus:
 def reserve_interaction(
     user: "User", application: "ClientApplication", action: str, request_id: Any
 ) -> tuple[UsageEvent, QuotaStatus]:
-    """Reserve a unit atomically. Repeated request IDs return the original result."""
+    """Reserva una interacción atómicamente; repetir el ID devuelve el resultado original."""
     quota_error: QuotaError | None = None
     with transaction.atomic():
         try:
@@ -110,8 +120,8 @@ def reserve_interaction(
                     request_id=request_id, user=user, application=application, action=action
                 )
         except IntegrityError:
-            # Lock only the reservation row. PostgreSQL cannot apply FOR UPDATE
-            # to the nullable side introduced by select_related("event").
+            # Solo se bloquea la reserva: PostgreSQL no puede aplicar FOR UPDATE
+            # sobre el lado anulable que introduce select_related("event").
             reservation = InteractionReservation.objects.select_for_update().get(
                 request_id=request_id
             )
@@ -202,7 +212,7 @@ def validate_interaction(
     application: "ClientApplication",
     action: str,
 ) -> UsageEvent:
-    """Consume a reservation exactly once before an application starts AI work."""
+    """Valida una reserva una única vez antes de iniciar trabajo de IA en el cliente."""
     try:
         event = (
             UsageEvent.objects.select_for_update()
@@ -231,6 +241,7 @@ def validate_interaction(
 def complete_interaction(
     request_id: Any, metadata: dict[str, Any] | None = None, processing_time_ms: int | None = None
 ) -> UsageEvent:
+    """Marca una interacción en proceso como completada y conserva metadatos seguros."""
     event = UsageEvent.objects.select_for_update().get(request_id=request_id)
     if event.status == UsageEvent.Status.PROCESSING:
         event.status = UsageEvent.Status.COMPLETED
@@ -245,6 +256,7 @@ def complete_interaction(
 def fail_interaction(
     request_id: Any, error_code: str, metadata: dict[str, Any] | None = None
 ) -> UsageEvent:
+    """Marca una interacción como fallida y devuelve cuota en los errores recuperables."""
     event = (
         UsageEvent.objects.select_for_update()
         .select_related("application", "user")
@@ -266,4 +278,5 @@ def fail_interaction(
 
 
 def get_usage_summary(user: "User") -> QuotaStatus:
+    """Expone el resumen de cuota para las capas web y API."""
     return check_quota(user)

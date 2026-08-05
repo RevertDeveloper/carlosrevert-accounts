@@ -1,3 +1,5 @@
+"""Pruebas de autorización, aislamiento de datos y callbacks internos de la API."""
+
 import uuid
 
 from django.test import TestCase
@@ -9,6 +11,8 @@ from apps.users.models import User
 
 
 class ApiPermissionTests(TestCase):
+    """Comprueba que cada endpoint expone solo los datos y acciones permitidos."""
+
     def setUp(self):
         self.user = User.objects.create_user(
             username="ana", email="ana@example.com", password="CorrectHorseBatteryStaple123!"

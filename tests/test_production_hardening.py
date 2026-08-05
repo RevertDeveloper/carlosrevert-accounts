@@ -1,3 +1,5 @@
+"""Pruebas de configuración segura, red de confianza y protecciones operativas."""
+
 from unittest.mock import patch
 
 from django.contrib import admin
@@ -15,6 +17,8 @@ from config.settings import production
 
 
 class ProductionSettingsTests(SimpleTestCase):
+    """Verifica que la configuración de producción activa las protecciones esperadas."""
+
     def test_security_settings_are_enabled(self):
         self.assertFalse(production.DEBUG)
         self.assertTrue(production.SECURE_SSL_REDIRECT)
@@ -29,6 +33,8 @@ class ProductionSettingsTests(SimpleTestCase):
 
 
 class ClientIpTests(SimpleTestCase):
+    """Comprueba que la IP reenviada solo se acepta desde proxies de confianza."""
+
     def setUp(self):
         self.factory = RequestFactory()
 
@@ -50,6 +56,8 @@ class ClientIpTests(SimpleTestCase):
 
 
 class OperationalHardeningTests(TestCase):
+    """Cubre salud, limitación de registro y restricciones administrativas."""
+
     def test_health_reports_database_failure(self):
         with patch("apps.dashboard.views.connection.cursor", side_effect=RuntimeError("down")):
             response = self.client.get(reverse("health"))

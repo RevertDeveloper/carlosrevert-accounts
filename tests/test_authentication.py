@@ -1,3 +1,5 @@
+"""Pruebas del registro, inicio de sesión y cierre de sesión mediante la API."""
+
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
@@ -7,6 +9,8 @@ from apps.users.models import User
 
 
 class AuthenticationApiTests(TestCase):
+    """Verifica el ciclo de autenticación y las restricciones básicas de cuenta."""
+
     def test_registration_creates_pending_demo_plan_user_without_session(self):
         response = self.client.post(
             reverse("api-register"),

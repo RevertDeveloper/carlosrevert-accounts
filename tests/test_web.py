@@ -1,3 +1,5 @@
+"""Pruebas de las vistas web, la cuenta canónica y sus redirecciones seguras."""
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -6,6 +8,8 @@ from apps.users.models import User
 
 
 class WebViewsTests(TestCase):
+    """Comprueba las páginas públicas, la cuenta y los destinos de inicio de sesión."""
+
     def test_health_and_auth_pages(self):
         self.assertEqual(self.client.get(reverse("health")).status_code, 200)
         self.assertEqual(self.client.get(reverse("register")).status_code, 200)

@@ -1,3 +1,5 @@
+"""Rutas versionadas de la API pública e interna del servicio de cuentas."""
+
 from django.urls import path
 
 from . import views

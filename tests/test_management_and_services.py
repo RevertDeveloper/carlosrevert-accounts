@@ -1,3 +1,5 @@
+"""Pruebas de comandos idempotentes y reglas de negocio del servicio de cuota."""
+
 import uuid
 
 from django.core.management import call_command
@@ -19,6 +21,8 @@ from apps.users.models import User
 
 
 class ManagementCommandTests(TestCase):
+    """Garantiza que la carga inicial se puede repetir sin duplicar datos."""
+
     def test_seed_commands_are_idempotent(self):
         call_command("seed_plans")
         call_command("seed_plans")
@@ -32,6 +36,8 @@ class ManagementCommandTests(TestCase):
 
 
 class QuotaServiceTests(TestCase):
+    """Ejercita el servicio de cuota directamente, incluida su trazabilidad segura."""
+
     def setUp(self):
         call_command("seed_plans")
         self.user = User.objects.create_user(

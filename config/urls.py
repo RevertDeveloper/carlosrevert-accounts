@@ -1,3 +1,5 @@
+"""Enrutador raíz: reúne la interfaz web, la API y la documentación del servicio."""
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -11,6 +13,8 @@ handler403 = "apps.dashboard.views.error_403"
 handler404 = "apps.dashboard.views.error_404"
 handler500 = "apps.dashboard.views.error_500"
 
+# Las rutas de la API permanecen versionadas para permitir evolución compatible
+# con las aplicaciones cliente ya desplegadas.
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", dashboard_views.health, name="health"),
@@ -25,4 +29,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    # Django solo sirve estáticos directamente durante desarrollo local.
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

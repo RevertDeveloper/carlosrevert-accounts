@@ -1,9 +1,12 @@
+"""Vistas REST que exponen autenticación, cuota, integraciones internas y métricas."""
+
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Count
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from drf_spectacular.utils import OpenApiTypes, extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -43,6 +46,7 @@ from .serializers import (
 
 
 def quota_payload(summary) -> dict:  # type: ignore[no-untyped-def]
+    """Convierte el objeto de cuota del dominio en la respuesta JSON pública."""
     return {
         "plan": summary.plan,
         "daily_limit": summary.daily_limit,
@@ -54,6 +58,8 @@ def quota_payload(summary) -> dict:  # type: ignore[no-untyped-def]
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class CsrfView(APIView):
+    """Entrega la cookie CSRF necesaria para clientes web basados en sesión."""
+
     permission_classes = (AllowAny,)
 
     @method_decorator(ensure_csrf_cookie)
@@ -63,6 +69,8 @@ class CsrfView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class MeView(APIView):
+    """Informa del estado de sesión actual sin exigir autenticación previa."""
+
     permission_classes = (AllowAny,)
 
     def get(self, request):  # type: ignore[no-untyped-def]
@@ -73,6 +81,8 @@ class MeView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class RegisterView(APIView):
+    """Crea una cuenta pendiente y desencadena la verificación de correo."""
+
     permission_classes = (AllowAny,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -103,6 +113,8 @@ class RegisterView(APIView):
 
 @extend_schema(request=VerifyEmailSerializer, responses={200: OpenApiTypes.OBJECT})
 class VerifyEmailView(APIView):
+    """Verifica el código de correo e inicia la sesión de la cuenta validada."""
+
     permission_classes = (AllowAny,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -127,6 +139,8 @@ class VerifyEmailView(APIView):
 
 @extend_schema(request=ResendEmailVerificationSerializer, responses={202: OpenApiTypes.OBJECT})
 class ResendEmailVerificationView(APIView):
+    """Reenvía códigos sin revelar si el correo pertenece a una cuenta existente."""
+
     permission_classes = (AllowAny,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -170,6 +184,8 @@ class ResendEmailVerificationView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class LoginView(APIView):
+    """Autentica por usuario o correo con limitación de intentos."""
+
     permission_classes = (AllowAny,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -195,6 +211,8 @@ class LoginView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class LogoutView(APIView):
+    """Cierra la sesión autenticada actual."""
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -204,6 +222,8 @@ class LogoutView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class UsageSummaryView(APIView):
+    """Devuelve el estado de cuota de la cuenta autenticada."""
+
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):  # type: ignore[no-untyped-def]
@@ -212,6 +232,8 @@ class UsageSummaryView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class ReserveUsageView(APIView):
+    """Reserva cuota para una acción antes de que el servicio de IA la procese."""
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -245,6 +267,8 @@ class ReserveUsageView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class UsageHistoryView(APIView):
+    """Lista exclusivamente los eventos de consumo de la cuenta autenticada."""
+
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):  # type: ignore[no-untyped-def]
@@ -269,6 +293,8 @@ class UsageHistoryView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class ApplicationsView(APIView):
+    """Publica el catálogo de aplicaciones activas para el lanzador web."""
+
     permission_classes = (AllowAny,)
 
     def get(self, request):  # type: ignore[no-untyped-def]
@@ -280,6 +306,8 @@ class ApplicationsView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class CompleteUsageView(APIView):
+    """Permite al backend interno marcar como completada su propia interacción."""
+
     permission_classes = (IsInternalService,)
 
     def post(self, request, request_id):  # type: ignore[no-untyped-def]
@@ -298,6 +326,8 @@ class CompleteUsageView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class FailUsageView(APIView):
+    """Permite al backend interno informar de un fallo de su interacción."""
+
     permission_classes = (IsInternalService,)
 
     def post(self, request, request_id):  # type: ignore[no-untyped-def]
@@ -316,6 +346,8 @@ class FailUsageView(APIView):
 
 @extend_schema(request=ValidateReservationSerializer, responses={200: OpenApiTypes.OBJECT})
 class ValidateUsageView(APIView):
+    """Valida que una reserva pertenece al servicio interno que pretende consumirla."""
+
     permission_classes = (IsInternalService,)
 
     def post(self, request):  # type: ignore[no-untyped-def]
@@ -350,6 +382,8 @@ class ValidateUsageView(APIView):
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 class MetricsView(APIView):
+    """Devuelve métricas agregadas del día solo para personal administrador."""
+
     permission_classes = (IsAdminUser,)
 
     def get(self, request):  # type: ignore[no-untyped-def]

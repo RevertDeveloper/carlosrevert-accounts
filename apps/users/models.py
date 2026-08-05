@@ -1,8 +1,12 @@
+"""Modelo de identidad propio del servicio central de cuentas."""
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 class User(AbstractUser):
+    """Usuario de Django ampliado con verificación de correo y estado de bloqueo."""
+
     email = models.EmailField("correo electrónico", unique=True)
     email_verified = models.BooleanField("correo verificado", default=False)
     is_blocked = models.BooleanField("bloqueado", default=False)
@@ -16,4 +20,5 @@ class User(AbstractUser):
         verbose_name_plural = "usuarios"
 
     def __str__(self) -> str:
+        """Representa al usuario por su correo, identificador único de la cuenta."""
         return self.email

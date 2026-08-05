@@ -1,3 +1,5 @@
+"""Pruebas del límite compartido entre aplicaciones y de la idempotencia de reservas."""
+
 import uuid
 
 from django.test import TestCase
@@ -11,6 +13,8 @@ from apps.users.models import User
 
 
 class QuotaApiTests(TestCase):
+    """Valida la cuota desde el contrato HTTP que utilizan las aplicaciones cliente."""
+
     def setUp(self):
         Plan.objects.get_or_create(
             code="PREMIUM",
