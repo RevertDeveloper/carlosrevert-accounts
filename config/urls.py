@@ -12,19 +12,12 @@ from apps.dashboard import views as dashboard_views
 
 
 def robots_txt(_request):  # type: ignore[no-untyped-def]
-    content = """User-agent: *
-Allow: /terms/
-Allow: /privacy/
-Allow: /llms.txt
-Disallow: /admin/
-Disallow: /api/
-Disallow: /account/
-Disallow: /login/
-Disallow: /register/
-Disallow: /password/
-
-Sitemap: https://cuenta.carlosrevert.es/sitemap.xml
-"""
+    content = "\n\n".join(
+        f"User-agent: {user_agent}\nAllow: /terms/\nAllow: /privacy/\nAllow: /llms.txt\n"
+        "Disallow: /admin/\nDisallow: /api/\nDisallow: /account/\n"
+        "Disallow: /login/\nDisallow: /register/\nDisallow: /password/"
+        for user_agent in ("OAI-SearchBot", "GPTBot", "Googlebot", "*")
+    ) + "\n\nSitemap: https://cuenta.carlosrevert.es/sitemap.xml\n"
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 
@@ -33,7 +26,6 @@ def sitemap_xml(_request):  # type: ignore[no-untyped-def]
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://cuenta.carlosrevert.es/terms/</loc></url>
   <url><loc>https://cuenta.carlosrevert.es/privacy/</loc></url>
-  <url><loc>https://cuenta.carlosrevert.es/llms.txt</loc></url>
 </urlset>
 """
     return HttpResponse(content, content_type="application/xml; charset=utf-8")
